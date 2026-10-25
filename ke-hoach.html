@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kế hoạch nghề nghiệp — Hướng Mở</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/ai-chat.css">
+<style>
+  .plan-row{ display:grid; grid-template-columns: 120px 1fr 1fr 34px; gap:10px; margin-bottom:10px; align-items:start; }
+  @media (max-width:700px){ .plan-row{ grid-template-columns: 1fr; } }
+  .row-remove{ background:transparent; border:1px solid var(--line-strong); border-radius:var(--radius-s); width:34px; height:38px; cursor:pointer; color: var(--caution); }
+  .mode-pick-grid{ grid-template-columns: repeat(2, 1fr); max-width:640px; margin:0 auto; }
+  @media (max-width:640px){ .mode-pick-grid{ grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="kehoach">
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--route)"/><path d="M16 5l3.2 8.8L28 16l-8.8 2.2L16 27l-3.2-8.8L4 16l8.8-2.2z" fill="#fff"/><circle cx="16" cy="16" r="2.4" fill="var(--waypoint)"/></svg>
+      <span class="brand-text">Hướng Mở<small>Định hướng nghề nghiệp</small></span>
+    </a>
+    <button class="nav-toggle" aria-label="Mở menu"><span></span></button>
+    <nav class="site-nav">
+      <a href="index.html" data-page="home">Trang chủ</a>
+      <a href="kham-pha-ban-than.html" data-page="self">Khám phá bản thân</a>
+      <a href="tra-cuu.html" data-page="tracuu">Tra cứu</a>
+      <a href="so-sanh.html" data-page="sosanh">So sánh</a>
+      <a href="ke-hoach.html" data-page="kehoach">Kế hoạch</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="page-hero" style="padding-bottom:0;">
+    <div class="wrap">
+      <p class="kicker">BƯỚC 4 / 4</p>
+      <h1>Career Roadmap</h1>
+      <p class="lede">Ghi lại phương án ưu tiên, phương án dự phòng, và các mốc hành động cụ thể để đi tới lựa chọn đó.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="step-shell" id="roadmap-wizard">
+
+      <!-- BƯỚC A: chọn cách tạo kế hoạch -->
+      <div class="wrap step-pane is-active" id="step-mode">
+        <div class="square-grid mode-pick-grid">
+          <button type="button" class="square-pick" id="mode-tu-tao">
+            <svg class="sq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            <span class="sq-title">Tự tạo</span>
+            <p class="sq-desc">Bạn tự điền phương án và các mốc hành động theo ý mình.</p>
+          </button>
+          <button type="button" class="square-pick" id="mode-ai">
+            <svg class="sq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m12 3 1.6 4.6L18 9l-4.4 1.4L12 15l-1.6-4.6L6 9l4.4-1.4Z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8Z"/></svg>
+            <span class="sq-title">Tạo với AI</span>
+            <p class="sq-desc">Trả lời vài câu hỏi ngắn, AI sẽ soạn sẵn kế hoạch cho bạn.</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- BƯỚC B (nhánh AI) — câu hỏi 1: phương án ưu tiên -->
+      <div class="wrap-narrow step-pane" id="step-ai-q1">
+        <div class="step-meter"><span class="step-count">Câu 1 / 2</span><div class="step-track"><div class="step-fill" style="width:50%"></div></div></div>
+        <h2 class="step-question">Phương án bạn ưu tiên nhất là gì?</h2>
+        <p class="text-faint" style="margin-top:-8px;">Ví dụ: một ngành học, một trường, hoặc cả hai.</p>
+        <input type="text" id="ai-q-uutien" placeholder="Ngành / trường bạn muốn hướng tới nhất">
+        <div class="step-nav">
+          <button type="button" class="btn btn-ghost btn-sm" id="ai-q1-back">← Quay lại</button>
+          <button type="button" class="btn btn-route btn-sm" id="ai-q1-next">Tiếp tục</button>
+        </div>
+      </div>
+
+      <!-- BƯỚC B (nhánh AI) — câu hỏi 2: phương án dự phòng -->
+      <div class="wrap-narrow step-pane" id="step-ai-q2">
+        <div class="step-meter"><span class="step-count">Câu 2 / 2</span><div class="step-track"><div class="step-fill" style="width:100%"></div></div></div>
+        <h2 class="step-question">Bạn có phương án dự phòng nào không?</h2>
+        <p class="text-faint" style="margin-top:-8px;">Không bắt buộc — có thể để trống.</p>
+        <input type="text" id="ai-q-duphong" placeholder="Một lựa chọn khác bạn cũng thấy ổn (nếu có)">
+        <div class="step-nav">
+          <button type="button" class="btn btn-ghost btn-sm" id="ai-q2-back">← Quay lại</button>
+          <button type="button" class="btn btn-waypoint btn-sm" id="ai-q2-submit">✨ Tạo kế hoạch bằng AI</button>
+        </div>
+        <p id="ai-q2-msg" class="text-faint" style="margin-top:10px; display:none;"></p>
+      </div>
+
+      <!-- BƯỚC C: menu soạn thảo -->
+      <div class="wrap-narrow step-pane" id="step-editor">
+        <div class="content-head" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-ghost btn-sm" id="btn-back-mode">← Đổi cách tạo kế hoạch</button>
+        </div>
+
+        <div class="card stack-20" style="margin-bottom:24px;">
+          <div class="field mt-0">
+            <label for="pa-uu-tien">Phương án ưu tiên</label>
+            <input type="text" id="pa-uu-tien" placeholder="Ngành / trường bạn muốn hướng tới nhất">
+          </div>
+          <div class="field">
+            <label for="pa-du-phong">Phương án dự phòng</label>
+            <input type="text" id="pa-du-phong" placeholder="Một lựa chọn khác bạn cũng thấy ổn">
+          </div>
+        </div>
+
+        <div class="notice route" style="margin-bottom:20px;">
+          <p>Điền phương án ưu tiên ở trên rồi bấm nút bên dưới — AI sẽ soạn sẵn một bảng kế hoạch theo từng mốc thời gian. Sau đó bạn có thể sửa lại tự do: đổi chữ, thêm/xóa dòng, y như một bảng bình thường.</p>
+        </div>
+        <button class="btn btn-waypoint btn-sm" id="btn-ai-plan" type="button">✨ Tạo kế hoạch bằng AI</button>
+        <p id="ai-plan-msg" class="text-faint" style="margin-top:8px; display:none;"></p>
+
+        <h3 style="margin-top:26px;">Các mốc hành động</h3>
+        <div id="plan-rows"></div>
+        <button class="btn btn-ghost btn-sm" id="btn-add-row" style="margin-top:6px;">+ Thêm mốc</button>
+
+        <div class="hero-actions" style="margin-top:24px;">
+          <button class="btn btn-route" id="btn-save-plan">Lưu kế hoạch</button>
+          <button class="btn btn-ghost" id="btn-print">In / Lưu thành PDF</button>
+          <button class="btn btn-ghost" id="btn-share-kehoach">Chia sẻ qua QR</button>
+        </div>
+        <p id="save-msg" class="text-faint" style="display:none; margin-top:10px;">Đã lưu kế hoạch trên máy của bạn ✓</p>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer no-print">
+  <div class="wrap">
+    <p>Hướng Mở — công cụ tra cứu hướng nghiệp dành cho học sinh THPT.</p>
+    <nav>
+      <a href="ke-hoach.html">Career Roadmap</a>
+      <a href="tra-cuu.html?loai=tohop">Tổ hợp xét tuyển</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="assets/js/firebase-config.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/share-qr.js"></script>
+<script src="assets/js/ai-chat.js"></script>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const sharedPlan = CareerShare.readShared();
+  const saved = sharedPlan ? null : CareerStore.get(CareerStore.KEYS.ROADMAP, null);
+
+  const wizard = CareerWizard(document.getElementById("roadmap-wizard"));
+  function setHeroVisible(visible) {
+    const hero = document.getElementById("page-hero");
+    if (hero) hero.classList.toggle("hero-collapsed", !visible);
+  }
+  function goStep(id) {
+    const idx = wizard.panes.findIndex(p => p.id === id);
+    wizard.go(idx);
+    setHeroVisible(id === "step-mode");
+  }
+
+  document.getElementById("pa-uu-tien").value = sharedPlan?.uuTien || saved?.uuTien || params.get("phuongan") || "";
+  document.getElementById("pa-du-phong").value = sharedPlan?.duPhong || saved?.duPhong || "";
+
+  const DEFAULT_ROWS = [
+    { thoiGian: "1 tháng", mucTieu: "Cải thiện môn học còn yếu", hoatDong: "Ôn tập 3 buổi/tuần, nhờ giáo viên hỗ trợ" },
+    { thoiGian: "3 tháng", mucTieu: "Tìm hiểu kỹ 3 trường", hoatDong: "Đọc đề án tuyển sinh, hỏi anh/chị khóa trên" },
+    { thoiGian: "6 tháng", mucTieu: "Hoàn thiện phương án", hoatDong: "Trao đổi với giáo viên chủ nhiệm và gia đình" }
+  ];
+  const rows = sharedPlan?.rows?.length ? sharedPlan.rows : (saved?.rows?.length ? saved.rows : DEFAULT_ROWS);
+
+  const rowsWrap = document.getElementById("plan-rows");
+
+  function addRow(data = { thoiGian:"", mucTieu:"", hoatDong:"" }) {
+    const div = document.createElement("div");
+    div.className = "plan-row";
+    div.innerHTML = `
+      <input type="text" class="r-thoigian" placeholder="Thời gian" value="${escapeHtml(data.thoiGian)}">
+      <input type="text" class="r-muctieu" placeholder="Mục tiêu" value="${escapeHtml(data.mucTieu)}">
+      <input type="text" class="r-hoatdong" placeholder="Hoạt động cụ thể" value="${escapeHtml(data.hoatDong)}">
+      <button type="button" class="row-remove" title="Xóa mốc này">×</button>
+    `;
+    div.querySelector(".row-remove").addEventListener("click", () => div.remove());
+    rowsWrap.appendChild(div);
+  }
+  rows.forEach(r => addRow(r));
+
+  document.getElementById("btn-add-row").addEventListener("click", () => addRow());
+
+  function collectPlan() {
+    const rowsData = [...rowsWrap.querySelectorAll(".plan-row")].map(div => ({
+      thoiGian: div.querySelector(".r-thoigian").value.trim(),
+      mucTieu: div.querySelector(".r-muctieu").value.trim(),
+      hoatDong: div.querySelector(".r-hoatdong").value.trim()
+    })).filter(r => r.thoiGian || r.mucTieu || r.hoatDong);
+
+    return {
+      uuTien: document.getElementById("pa-uu-tien").value.trim(),
+      duPhong: document.getElementById("pa-du-phong").value.trim(),
+      rows: rowsData,
+      capNhat: new Date().toISOString()
+    };
+  }
+
+  document.getElementById("btn-save-plan").addEventListener("click", () => {
+    const plan = collectPlan();
+    CareerStore.set(CareerStore.KEYS.ROADMAP, plan);
+    if (sharedPlan) { location.href = "ke-hoach.html"; return; }
+    const msg = document.getElementById("save-msg");
+    msg.style.display = "block";
+    setTimeout(() => msg.style.display = "none", 3000);
+    window.CAREERQR_AI_CONTEXT = `Học sinh đang lập kế hoạch nghề nghiệp. Phương án ưu tiên: ${plan.uuTien || "chưa điền"}. Phương án dự phòng: ${plan.duPhong || "chưa điền"}.`;
+  });
+
+  document.getElementById("btn-print").addEventListener("click", () => {
+    CareerStore.set(CareerStore.KEYS.ROADMAP, collectPlan());
+    window.print();
+  });
+
+  function setRows(newRows) {
+    rowsWrap.innerHTML = "";
+    (newRows.length ? newRows : DEFAULT_ROWS).forEach(r => addRow(r));
+  }
+
+  /* ---------------------------------------------------------
+     Hàm dùng chung để gọi AI soạn kế hoạch — dùng cho cả nút
+     trong bước hỏi-đáp và nút "Tạo kế hoạch bằng AI" trong menu
+     soạn thảo (để tạo lại nếu muốn).
+     --------------------------------------------------------- */
+  async function requestAIPlan(uuTien, duPhong) {
+    const selfData = CareerStore.get(CareerStore.KEYS.SELF, null);
+    const hoSo = selfData
+      ? `Học sinh học tốt/thích môn: ${(selfData.monHoc||[]).join(", ") || "chưa rõ"}. Sở thích: ${selfData.soThich || "chưa rõ"}. Giá trị nghề nghiệp quan trọng: ${selfData.giaTri || "chưa rõ"}.`
+      : "Chưa có dữ liệu khám phá bản thân.";
+
+    const userMsg = `Học sinh THPT có phương án nghề nghiệp ưu tiên là "${uuTien}"${duPhong ? ` và phương án dự phòng là "${duPhong}"` : ""}.
+${hoSo}
+
+Hãy soạn một bảng kế hoạch hành động (Career Roadmap) gồm 5-6 mốc thời gian hợp lý (ví dụ: 1 tháng, 3 tháng, 6 tháng, 9 tháng, 12 tháng, hoặc mốc theo học kỳ/kỳ thi), mỗi mốc có một mục tiêu cụ thể và 1 hoạt động cụ thể, thiết thực, vừa sức học sinh THPT (không đưa lời khuyên y tế/tài chính rủi ro). Trả lời CHỈ bằng JSON, không thêm chữ nào khác, đúng định dạng:
+{"rows":[{"thoiGian":"...","mucTieu":"...","hoatDong":"..."}]}`;
+
+    const reply = await CareerAI.chat([
+      { role: "system", content: "Bạn là trợ lý hướng nghiệp, giỏi lập kế hoạch hành động ngắn gọn, thực tế cho học sinh THPT. Luôn trả lời đúng định dạng JSON được yêu cầu, không thêm giải thích ngoài JSON." },
+      { role: "user", content: userMsg }
+    ], { temperature: 0.5 });
+
+    const parsed = CareerAI.parseJson(reply);
+    const rows = (parsed.rows || []).filter(r => r.thoiGian || r.mucTieu || r.hoatDong);
+    if (!rows.length) throw new Error("AI không trả về mốc kế hoạch hợp lệ.");
+    return rows;
+  }
+
+  document.getElementById("btn-ai-plan").addEventListener("click", async () => {
+    const uuTien = document.getElementById("pa-uu-tien").value.trim();
+    const duPhong = document.getElementById("pa-du-phong").value.trim();
+    const msg = document.getElementById("ai-plan-msg");
+
+    if (!uuTien) {
+      alert("Bạn điền \"Phương án ưu tiên\" ở phía trên trước, để AI soạn kế hoạch sát hơn nhé.");
+      return;
+    }
+
+    const btn = document.getElementById("btn-ai-plan");
+    btn.disabled = true;
+    btn.textContent = "Đang soạn kế hoạch…";
+    msg.style.display = "none";
+
+    try {
+      const rows = await requestAIPlan(uuTien, duPhong);
+      setRows(rows);
+      msg.textContent = "Đã tạo kế hoạch bằng AI — bạn có thể sửa lại từng ô bên dưới, sau đó bấm \"Lưu kế hoạch\".";
+      msg.style.display = "block";
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "Trợ lý AI đang gặp sự cố (" + err.message + "). Bạn có thể tự điền bảng bên dưới, hoặc thử lại sau ít phút.";
+      msg.style.display = "block";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "✨ Tạo kế hoạch bằng AI";
+    }
+  });
+
+  document.getElementById("btn-share-kehoach").addEventListener("click", () => {
+    const plan = collectPlan();
+    if (!plan.uuTien && !plan.rows.length) {
+      alert("Bạn điền kế hoạch trước khi chia sẻ nhé.");
+      return;
+    }
+    const url = CareerShare.buildShareUrl("ke-hoach.html", plan);
+    CareerShare.open(url, {
+      title: "Chia sẻ Career Roadmap",
+      description: "Bạn bè quét mã sẽ xem được kế hoạch nghề nghiệp của bạn."
+    });
+  });
+
+  /* ---------------------------------------------------------
+     Nếu link có dữ liệu chia sẻ (?xem=...): mở thẳng menu soạn
+     thảo ở chế độ CHỈ XEM (khóa các ô nhập, ẩn các nút chỉnh sửa),
+     kèm nút để lưu bản này thành kế hoạch của chính mình.
+     --------------------------------------------------------- */
+  if (sharedPlan) {
+    goStep("step-editor");
+    document.getElementById("pa-uu-tien").setAttribute("readonly", "true");
+    document.getElementById("pa-du-phong").setAttribute("readonly", "true");
+    document.querySelectorAll("#plan-rows input").forEach(el => el.setAttribute("readonly", "true"));
+    document.querySelectorAll("#plan-rows .row-remove").forEach(el => el.style.display = "none");
+    document.getElementById("btn-add-row").style.display = "none";
+    document.getElementById("btn-ai-plan").style.display = "none";
+    document.getElementById("btn-share-kehoach").style.display = "none";
+    document.getElementById("btn-back-mode").style.display = "none";
+    document.getElementById("btn-save-plan").textContent = "Lưu về máy của bạn";
+    CareerShare.renderBanner(document.getElementById("step-editor"), {
+      text: "Đây là Career Roadmap do bạn bè chia sẻ — chỉ xem, không chỉnh sửa được. Bấm \"Lưu về máy của bạn\" nếu muốn dùng làm kế hoạch của chính mình (có thể sửa lại sau khi lưu)."
+    });
+  }
+
+  /* ---------------------------------------------------------
+     BƯỚC A: chọn cách tạo kế hoạch — tự tạo hoặc tạo với AI.
+     Nếu đã có kế hoạch lưu trước đó, hoặc đến từ trang So sánh
+     (đã có phương án gợi ý), vào thẳng menu soạn thảo, khỏi hỏi lại.
+     --------------------------------------------------------- */
+  if (saved || params.get("phuongan")) {
+    goStep("step-editor");
+  }
+
+  document.getElementById("mode-tu-tao").addEventListener("click", () => {
+    goStep("step-editor");
+  });
+  document.getElementById("mode-ai").addEventListener("click", () => {
+    document.getElementById("ai-q-uutien").value = "";
+    document.getElementById("ai-q-duphong").value = "";
+    goStep("step-ai-q1");
+  });
+
+  document.getElementById("ai-q1-back").addEventListener("click", () => goStep("step-mode"));
+  document.getElementById("ai-q1-next").addEventListener("click", () => {
+    if (!document.getElementById("ai-q-uutien").value.trim()) {
+      alert("Bạn điền phương án ưu tiên trước khi tiếp tục nhé.");
+      return;
+    }
+    goStep("step-ai-q2");
+  });
+  document.getElementById("ai-q2-back").addEventListener("click", () => goStep("step-ai-q1"));
+
+  document.getElementById("ai-q2-submit").addEventListener("click", async () => {
+    const uuTien = document.getElementById("ai-q-uutien").value.trim();
+    const duPhong = document.getElementById("ai-q-duphong").value.trim();
+    const msg = document.getElementById("ai-q2-msg");
+    const btn = document.getElementById("ai-q2-submit");
+
+    if (!uuTien) { goStep("step-ai-q1"); return; }
+
+    btn.disabled = true;
+    btn.textContent = "Đang soạn kế hoạch…";
+    msg.style.display = "none";
+
+    document.getElementById("pa-uu-tien").value = uuTien;
+    document.getElementById("pa-du-phong").value = duPhong;
+
+    let rows = null, planMsg = "", isFallback = false;
+    try {
+      rows = await requestAIPlan(uuTien, duPhong);
+      planMsg = "Đã tạo kế hoạch bằng AI — bạn có thể sửa lại từng ô bên dưới, sau đó bấm \"Lưu kế hoạch\".";
+    } catch (err) {
+      console.error(err);
+      isFallback = true;
+      planMsg = "Trợ lý AI đang gặp sự cố (" + err.message + "). Bạn có thể tự điền bảng bên dưới, hoặc bấm \"✨ Tạo kế hoạch bằng AI\" trong menu soạn thảo để thử lại.";
+    }
+
+    setRows(rows || []);
+    const editorMsg = document.getElementById("ai-plan-msg");
+    editorMsg.textContent = planMsg;
+    editorMsg.style.display = "block";
+
+    btn.disabled = false;
+    btn.textContent = "✨ Tạo kế hoạch bằng AI";
+    goStep("step-editor");
+  });
+
+  document.getElementById("btn-back-mode").addEventListener("click", () => goStep("step-mode"));
+
+  window.CAREERQR_AI_CONTEXT = "Học sinh đang ở trang Lập kế hoạch nghề nghiệp (Career Roadmap), điền phương án ưu tiên/dự phòng và các mốc hành động theo thời gian.";
+</script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>So sánh lựa chọn — Hướng Mở</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/ai-chat.css">
+<style>
+  #step-picker.hidden, #step-quiz.hidden, #step-result.hidden{ display:none; }
+  #step-picker, #step-quiz, #step-result{ animation: stepIn .35s ease both; }
+</style>
+</head>
+<body data-page="sosanh">
+
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="index.html">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--route)"/><path d="M16 5l3.2 8.8L28 16l-8.8 2.2L16 27l-3.2-8.8L4 16l8.8-2.2z" fill="#fff"/><circle cx="16" cy="16" r="2.4" fill="var(--waypoint)"/></svg>
+      <span class="brand-text">Hướng Mở<small>Định hướng nghề nghiệp</small></span>
+    </a>
+    <button class="nav-toggle" aria-label="Mở menu"><span></span></button>
+    <nav class="site-nav">
+      <a href="index.html" data-page="home">Trang chủ</a>
+      <a href="kham-pha-ban-than.html" data-page="self">Khám phá bản thân</a>
+      <a href="tra-cuu.html" data-page="tracuu">Tra cứu</a>
+      <a href="so-sanh.html" data-page="sosanh">So sánh</a>
+      <a href="ke-hoach.html" data-page="kehoach">Kế hoạch</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="page-hero" style="padding-bottom:0;">
+    <div class="wrap">
+      <p class="kicker">BƯỚC 3 / 4</p>
+      <h1>So sánh các lựa chọn</h1>
+      <p class="lede">Chọn các phương án bạn đang phân vân, rồi trả lời từng câu một trong 20 câu hỏi. Mỗi câu có một trọng số riêng theo mức độ quan trọng — tổng điểm tối đa là 100.</p>
+    </div>
+  </section>
+
+  <!-- BƯỚC 0: chọn phương án -->
+  <section id="step-picker">
+    <div class="wrap-narrow">
+      <div class="card stack-20">
+        <div>
+          <h3 class="mt-0">1. Chọn ngành có sẵn</h3>
+          <input type="search" id="picker-search" placeholder="Tìm ngành…" style="margin-bottom:10px;">
+          <div class="option-picker" id="picker-list"></div>
+          <p id="picker-loading" class="text-faint" style="margin-top:8px;">Đang tải danh sách ngành…</p>
+        </div>
+        <div>
+          <h3>2. Hoặc tự thêm phương án khác</h3>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="picker-custom-input" placeholder="Ví dụ: Ngôn ngữ Anh — Trường Đại học C">
+            <button class="btn btn-ghost btn-sm" id="picker-custom-add" type="button">Thêm</button>
+          </div>
+          <div class="tag-list" id="picker-custom-list" style="margin-top:10px;"></div>
+        </div>
+        <div>
+          <p class="text-faint" id="picker-count">Đã chọn 0 phương án — cần ít nhất 2 để bắt đầu (gợi ý 6–7).</p>
+          <button class="btn btn-route" id="picker-start" disabled>Bắt đầu trả lời 20 câu hỏi</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BƯỚC 1: trắc nghiệm -->
+  <section id="step-quiz" class="hidden">
+    <div class="wrap-narrow">
+      <p class="text-faint" id="quiz-progress-label">Câu 1 / 20</p>
+      <div class="quiz-progress"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:5%"></div></div>
+      <h2 class="quiz-question" id="quiz-question-text">…</h2>
+      <p class="text-faint" id="quiz-weight-label" style="margin-top:-10px;">Câu này đáng 5 điểm</p>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="hero-actions" style="margin-top:18px;">
+        <button class="btn btn-route btn-sm" id="quiz-next" type="button" disabled>Câu tiếp theo →</button>
+        <button class="btn btn-ghost btn-sm" id="quiz-skip" type="button">Khó nói, bỏ qua câu này</button>
+        <button class="btn btn-ghost btn-sm" id="quiz-restart" type="button">Chọn lại phương án từ đầu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BƯỚC 2: kết quả -->
+  <section id="step-result" class="hidden">
+    <div class="wrap-narrow">
+      <div class="card">
+        <h3 class="mt-0">Kết quả so sánh</h3>
+        <p class="text-soft" id="result-summary">Điểm của mỗi phương án là tổng trọng số các câu mà phương án đó được chọn, trên thang điểm 100.</p>
+        <div id="result-bars" style="margin-top:18px;"></div>
+        <p class="text-faint">Kết quả chỉ là công cụ hỗ trợ suy nghĩ, không phải câu trả lời tuyệt đối — hãy cân nhắc thêm cảm nhận thực tế của bạn.</p>
+        <div class="hero-actions">
+          <a class="btn btn-waypoint btn-sm" id="btn-to-plan" href="ke-hoach.html">Lập kế hoạch cho phương án cao điểm nhất →</a>
+          <button class="btn btn-ghost btn-sm" id="btn-share-sosanh">Chia sẻ qua QR</button>
+          <button class="btn btn-ghost btn-sm" id="btn-redo">Làm lại từ đầu</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Hướng Mở — công cụ tra cứu hướng nghiệp dành cho học sinh THPT.</p>
+    <nav>
+      <a href="ke-hoach.html">Career Roadmap</a>
+      <a href="tra-cuu.html?loai=tohop">Tổ hợp xét tuyển</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="assets/js/firebase-config.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/share-qr.js"></script>
+
+<script>
+  // Mỗi câu có "weight" (trọng số điểm) riêng theo mức độ quan trọng.
+  // Tổng trọng số của cả 20 câu = 100, để điểm cuối cùng của mỗi
+  // phương án nằm trên thang điểm 100.
+  const QUESTIONS = [
+    { cat:"so_thich", w:5, text:"Nếu được làm việc mỗi ngày, phương án nào khiến bạn hào hứng nhất?" },
+    { cat:"so_thich", w:5, text:"Phương án nào gần với những điều bạn thường tìm hiểu, đọc thêm ngoài giờ học?" },
+    { cat:"so_thich", w:5, text:"Nếu phải kể cho bạn thân nghe say sưa về một hướng đi, bạn sẽ chọn phương án nào?" },
+    { cat:"so_thich", w:5, text:"Tưởng tượng 5 năm nữa bạn đang làm công việc đó — phương án nào khiến bạn mỉm cười?" },
+    { cat:"nang_luc", w:5, text:"Phương án nào phù hợp nhất với thế mạnh hiện tại của bạn?" },
+    { cat:"nang_luc", w:5, text:"Nếu phải học thêm kiến thức mới, phương án nào bạn học nhanh và tự tin hơn?" },
+    { cat:"nang_luc", w:5, text:"Thầy cô hoặc bạn bè hay khen bạn giỏi ở mảng nào gần với phương án nào nhất?" },
+    { cat:"nang_luc", w:5, text:"Phương án nào tận dụng tốt nhất những gì bạn đang làm tốt?" },
+    { cat:"mon_hoc", w:5, text:"Phương án nào gắn với môn học bạn học tốt và thích nhất?" },
+    { cat:"mon_hoc", w:5, text:"Nếu chỉ được chọn ôn tập một nhóm môn, phương án nào khiến bạn sẵn sàng ôn nhất?" },
+    { cat:"mon_hoc", w:5, text:"Phương án nào có tổ hợp xét tuyển gần với điểm mạnh của bạn nhất?" },
+    { cat:"gia_tri", w:5, text:"Phương án nào phù hợp với điều bạn coi trọng nhất ở một công việc tương lai?" },
+    { cat:"gia_tri", w:5, text:"Nếu chọn theo đúng mong muốn thật sự của bạn (không phải người khác), bạn nghiêng về phương án nào?" },
+    { cat:"gia_tri", w:5, text:"Phương án nào mang lại cảm giác “đúng là mình” nhiều nhất?" },
+    { cat:"dieu_kien", w:5, text:"Xét về điều kiện học tập, tài chính hiện tại của gia đình, phương án nào khả thi hơn?" },
+    { cat:"dieu_kien", w:5, text:"Phương án nào thuận lợi hơn về nơi học (gần nhà, dễ di chuyển…)?" },
+    { cat:"co_hoi", w:6, text:"Phương án nào bạn nghĩ có nhiều cơ hội việc làm hơn trong tương lai?" },
+    { cat:"co_hoi", w:6, text:"Phương án nào bạn nghĩ sẽ dễ phát triển, thăng tiến hơn về lâu dài?" },
+    { cat:"san_sang", w:4, text:"Phương án nào bạn cảm thấy sẵn sàng bắt tay vào tìm hiểu ngay từ bây giờ?" },
+    { cat:"san_sang", w:4, text:"Nếu phải quyết định ngay hôm nay, bạn chọn phương án nào?" }
+  ];
+  const TOTAL_WEIGHT = QUESTIONS.reduce((s, q) => s + q.w, 0); // = 100
+
+  let ALL_NGANH = [];
+  let options = []; // { id, label }
+  let customCount = 0;
+  let answers = [];
+  let qIndex = 0;
+
+  const pickerList = document.getElementById("picker-list");
+  const pickerSearch = document.getElementById("picker-search");
+  const pickerCount = document.getElementById("picker-count");
+  const pickerStart = document.getElementById("picker-start");
+  const customListWrap = document.getElementById("picker-custom-list");
+
+  db.collection(COL.NGANH).get().then(snap => {
+    ALL_NGANH = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById("picker-loading").style.display = "none";
+    renderPickerList();
+  }).catch(err => {
+    document.getElementById("picker-loading").textContent = "Không tải được danh sách ngành: " + err.message;
+  });
+
+  function renderPickerList() {
+    const kw = pickerSearch.value.trim().toLowerCase();
+    const filtered = ALL_NGANH.filter(n => !kw || n.ten_nganh.toLowerCase().includes(kw));
+    pickerList.innerHTML = filtered.map(n => `
+      <label><input type="checkbox" class="picker-cb" value="nganh:${escapeHtml(n.id)}" data-label="${escapeHtml(n.ten_nganh)}"> ${escapeHtml(n.ten_nganh)} <span class="text-faint">(${escapeHtml(n.nhom_nganh||"")})</span></label>
+    `).join("") || `<p class="text-faint">Không tìm thấy ngành phù hợp.</p>`;
+    pickerList.querySelectorAll(".picker-cb").forEach(cb => {
+      const wasSaved = options.some(o => o.id === cb.value);
+      cb.checked = wasSaved;
+      cb.addEventListener("change", syncOptionsFromPicker);
+    });
+  }
+  pickerSearch.addEventListener("input", renderPickerList);
+
+  // Prefill từ ngành đã lưu ở trang Tra cứu ngành
+  const savedNganh = CareerStore.get(CareerStore.KEYS.SAVED_NGANH, []);
+  savedNganh.forEach(n => options.push({ id: "nganh:" + n.id, label: n.ten_nganh }));
+
+  function syncOptionsFromPicker() {
+    const checked = [...pickerList.querySelectorAll(".picker-cb:checked")].map(cb => ({ id: cb.value, label: cb.dataset.label }));
+    const customOnes = options.filter(o => o.id.startsWith("custom:"));
+    options = [...checked, ...customOnes];
+    updatePickerCount();
+  }
+
+  document.getElementById("picker-custom-add").addEventListener("click", () => {
+    const input = document.getElementById("picker-custom-input");
+    const val = input.value.trim();
+    if (!val) return;
+    customCount++;
+    options.push({ id: "custom:" + customCount, label: val });
+    input.value = "";
+    renderCustomList();
+    updatePickerCount();
+  });
+
+  function renderCustomList() {
+    customListWrap.innerHTML = options.filter(o => o.id.startsWith("custom:")).map(o => `
+      <span class="tag tag-outline">${escapeHtml(o.label)} <button type="button" data-id="${escapeHtml(o.id)}" style="border:none;background:none;cursor:pointer;color:var(--caution);font-weight:700;">×</button></span>
+    `).join("");
+    customListWrap.querySelectorAll("button[data-id]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        options = options.filter(o => o.id !== btn.dataset.id);
+        renderCustomList();
+        updatePickerCount();
+      });
+    });
+  }
+
+  function updatePickerCount() {
+    pickerCount.textContent = `Đã chọn ${options.length} phương án — chọn ít nhất 2 để bắt đầu (không giới hạn số lượng, gợi ý 6–7 phương án).`;
+    pickerStart.disabled = options.length < 2;
+  }
+  updatePickerCount();
+  renderCustomList();
+
+  function setHeroVisible(visible) {
+    const hero = document.getElementById("page-hero");
+    if (hero) hero.classList.toggle("hero-collapsed", !visible);
+  }
+
+  document.getElementById("picker-start").addEventListener("click", () => {
+    answers = new Array(QUESTIONS.length).fill(null);
+    qIndex = 0;
+    document.getElementById("step-picker").classList.add("hidden");
+    document.getElementById("step-quiz").classList.remove("hidden");
+    setHeroVisible(false);
+    renderQuestion();
+  });
+
+  function renderQuestion() {
+    const q = QUESTIONS[qIndex];
+    document.getElementById("quiz-progress-label").textContent = `Câu ${qIndex+1} / ${QUESTIONS.length}`;
+    document.getElementById("quiz-progress-fill").style.width = Math.round(((qIndex)/QUESTIONS.length)*100) + "%";
+    document.getElementById("quiz-question-text").textContent = q.text;
+    document.getElementById("quiz-weight-label").textContent = `Câu này đáng ${q.w} / ${TOTAL_WEIGHT} điểm`;
+    const nextBtn = document.getElementById("quiz-next");
+    nextBtn.disabled = true;
+    const wrap = document.getElementById("quiz-options");
+    wrap.innerHTML = options.map(o => `<button type="button" class="quiz-option" data-id="${escapeHtml(o.id)}">${escapeHtml(o.label)}</button>`).join("");
+    wrap.querySelectorAll(".quiz-option").forEach(btn => {
+      // Chỉ đánh dấu lựa chọn — học sinh phải bấm "Câu tiếp theo" để sang câu kế.
+      btn.addEventListener("click", () => {
+        answers[qIndex] = btn.dataset.id;
+        wrap.querySelectorAll(".quiz-option").forEach(b => b.classList.toggle("is-selected", b === btn));
+        nextBtn.disabled = false;
+      });
+    });
+  }
+
+  function nextQuestion() {
+    qIndex++;
+    if (qIndex >= QUESTIONS.length) {
+      showResults();
+    } else {
+      renderQuestion();
+    }
+  }
+
+  document.getElementById("quiz-next").addEventListener("click", () => {
+    if (answers[qIndex] == null) return;
+    nextQuestion();
+  });
+  document.getElementById("quiz-skip").addEventListener("click", () => {
+    answers[qIndex] = null;
+    nextQuestion();
+  });
+  document.getElementById("quiz-restart").addEventListener("click", () => {
+    document.getElementById("step-quiz").classList.add("hidden");
+    document.getElementById("step-picker").classList.remove("hidden");
+    setHeroVisible(true);
+  });
+
+  function renderScoreBars(ranked, summaryText) {
+    document.getElementById("result-summary").textContent = summaryText;
+    const bars = document.getElementById("result-bars");
+    bars.innerHTML = "";
+    ranked.forEach((o, i) => {
+      const isTop = i === 0 && o.score > 0;
+      const row = document.createElement("div");
+      row.className = "score-row" + (isTop ? " is-top" : "");
+      row.innerHTML = `
+        <div class="score-label">${escapeHtml(o.label)}${isTop ? " 🏆" : ""}</div>
+        <div class="score-track"><div class="score-fill" style="width:0%"></div></div>
+        <div class="score-num">${o.score}/100</div>`;
+      bars.appendChild(row);
+      requestAnimationFrame(() => {
+        row.querySelector(".score-fill").style.width = o.score + "%";
+      });
+    });
+  }
+
+  function showResults() {
+    document.getElementById("step-quiz").classList.add("hidden");
+    document.getElementById("step-result").classList.remove("hidden");
+    setHeroVisible(false);
+
+    // Điểm theo trọng số: mỗi câu trả lời cộng đúng "w" điểm cho
+    // phương án được chọn ở câu đó. Tổng tối đa mỗi phương án có thể
+    // đạt là TOTAL_WEIGHT (100) nếu được chọn ở tất cả các câu.
+    const scores = {};
+    options.forEach(o => scores[o.id] = 0);
+    let answeredWeight = 0;
+    answers.forEach((a, i) => {
+      if (a) { scores[a] = (scores[a] || 0) + QUESTIONS[i].w; answeredWeight += QUESTIONS[i].w; }
+    });
+
+    const ranked = options.map(o => ({ ...o, score: scores[o.id] || 0 }))
+      .sort((a,b) => b.score - a.score);
+
+    renderScoreBars(ranked, `Điểm của mỗi phương án là tổng trọng số các câu được chọn, trên thang điểm 100 (đã trả lời ${answeredWeight}/${TOTAL_WEIGHT} điểm trọng số).`);
+
+    const best = ranked[0];
+    document.getElementById("btn-to-plan").href = "ke-hoach.html?phuongan=" + encodeURIComponent(best?.label || "");
+
+    CareerStore.set(CareerStore.KEYS.COMPARE, { options, answers, weights: QUESTIONS.map(q => q.w), scores: ranked, capNhat: new Date().toISOString() });
+    window.CAREERQR_AI_CONTEXT = `Học sinh vừa hoàn thành bài so sánh có trọng số (thang 100 điểm) giữa các phương án: ${options.map(o=>o.label).join(", ")}. Phương án điểm cao nhất là "${best?.label}" với ${best?.score || 0}/100 điểm.`;
+  }
+
+  document.getElementById("btn-redo").addEventListener("click", () => {
+    document.getElementById("step-result").classList.add("hidden");
+    document.getElementById("step-picker").classList.remove("hidden");
+    setHeroVisible(true);
+  });
+
+  document.getElementById("btn-share-sosanh").addEventListener("click", () => {
+    const compare = CareerStore.get(CareerStore.KEYS.COMPARE, null);
+    if (!compare) return;
+    const payload = { ranked: compare.scores.map(o => ({ label: o.label, score: o.score })) };
+    const url = CareerShare.buildShareUrl("so-sanh.html", payload);
+    CareerShare.open(url, {
+      title: "Chia sẻ kết quả so sánh",
+      description: "Bạn bè quét mã sẽ xem được bảng điểm so sánh các phương án của bạn."
+    });
+  });
+
+  // ---- Nếu link có dữ liệu chia sẻ (?xem=...), hiện kết quả đó ở chế độ chỉ xem ----
+  const sharedCompare = CareerShare.readShared();
+  if (sharedCompare && Array.isArray(sharedCompare.ranked)) {
+    document.getElementById("step-picker").classList.add("hidden");
+    document.getElementById("step-quiz").classList.add("hidden");
+    document.getElementById("step-result").classList.remove("hidden");
+    setHeroVisible(false);
+    renderScoreBars(sharedCompare.ranked, "Đây là bảng điểm so sánh do bạn bè chia sẻ, trên thang điểm 100.");
+    const best = sharedCompare.ranked[0];
+    document.getElementById("btn-to-plan").href = "ke-hoach.html?phuongan=" + encodeURIComponent(best?.label || "");
+    document.getElementById("btn-share-sosanh").style.display = "none";
+    document.getElementById("btn-redo").textContent = "Tự làm bài so sánh của bạn";
+    CareerShare.renderBanner(document.querySelector("#step-result .card"), {
+      text: "Đây là kết quả so sánh do bạn bè chia sẻ — chỉ xem, không chỉnh sửa được."
+    });
+  }
+
+  window.CAREERQR_AI_CONTEXT = "Học sinh đang ở trang So sánh lựa chọn, trả lời bộ câu hỏi chọn phương án yêu thích để so sánh nhiều ngành/trường cùng lúc.";
+</script>
+<script src="assets/js/ai-chat.js"></script>
+</body>
+</html>

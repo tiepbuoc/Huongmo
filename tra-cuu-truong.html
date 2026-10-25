@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="0; url=tra-cuu.html">
+<title>Đang chuyển hướng — Hướng Mở</title>
+<script>
+  var p = new URLSearchParams(location.search);
+  var q = new URLSearchParams();
+  q.set("loai", "truong");
+  if (p.get("nganh")) q.set("nganh", p.get("nganh"));
+  if (p.get("tinh")) q.set("tinh", p.get("tinh"));
+  if (p.get("tohop")) q.set("tohop", p.get("tohop"));
+  location.replace("tra-cuu.html?" + q.toString());
+</script>
+</head>
+<body>
+<p>Trang này đã gộp vào mục <a href="tra-cuu.html">Tra cứu</a>. Đang chuyển hướng…</p>
+</body>
+</html>
