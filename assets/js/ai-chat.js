@@ -19,8 +19,13 @@
 const AI_CONFIG = {
   API_KEY: "sk-4150297863e3eee405805e8609648e6c5cebb1b502ffb46e",
   API_ENDPOINT: "https://api.shopaikey.com/v1/chat/completions",
-  MODEL: "gpt-4.1-mini-2025-04-14"
+  // Danh sách model theo thứ tự ưu tiên: gặp HTTP 503 (quá tải) thì chuyển sang model kế tiếp.
+  MODELS: ["gpt-4.1-mini-2025-04-14", "gpt-4o-mini", "gpt-5-mini"]
 };
+
+// Nhớ model đang dùng được để các lần gọi sau dùng thẳng, không dò lại từ đầu.
+// Chỉ khi cả 3 model đều 503 mới đặt lại về 0 để lần sau kiểm tra lại từng model.
+let activeModelIndex = 0;
 
 const AI_SYSTEM_PROMPT = `Bạn là trợ lý hướng nghiệp của Hướng Mở, một công cụ giúp học sinh THPT tra cứu ngành học, trường đào tạo và tổ hợp xét tuyển.
 Nhiệm vụ của bạn:
@@ -37,26 +42,50 @@ Trả lời bằng tiếng Việt, giọng thân thiện, như một anh/chị t
    gọi AI mà không cần mở khung chat.
    --------------------------------------------------------- */
 async function careerAIChat(messages, opts = {}) {
-  const response = await fetch(AI_CONFIG.API_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + AI_CONFIG.API_KEY
-    },
-    body: JSON.stringify({
-      model: AI_CONFIG.MODEL,
-      messages,
-      temperature: opts.temperature ?? 0.6
-    })
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Lỗi API (${response.status}): ${errText}`);
+  const models = AI_CONFIG.MODELS;
+
+  // Bắt đầu từ model đang chạy tốt gần nhất, xoay vòng qua đủ các model.
+  for (let i = 0; i < models.length; i++) {
+    const idx = (activeModelIndex + i) % models.length;
+    const model = models[idx];
+
+    const response = await fetch(AI_CONFIG.API_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + AI_CONFIG.API_KEY
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: opts.temperature ?? 0.6
+      })
+    });
+
+    if (response.status === 503) {
+      console.warn("Hướng Mở: model " + model + " đang quá tải (503), thử model kế tiếp...");
+      continue;
+    }
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Lỗi API (${response.status}): ${errText}`); // lỗi khác 503 thì không đổi model
+    }
+
+    if (idx !== activeModelIndex) {
+      console.info("Hướng Mở: chuyển sang dùng model " + model + " cho các lần gọi tiếp theo.");
+    }
+    activeModelIndex = idx; // ghi nhớ model đang hoạt động
+
+    const data = await response.json();
+    const reply = data?.choices?.[0]?.message?.content?.trim();
+    if (!reply) throw new Error("AI không trả về nội dung.");
+    return reply;
   }
-  const data = await response.json();
-  const reply = data?.choices?.[0]?.message?.content?.trim();
-  if (!reply) throw new Error("AI không trả về nội dung.");
-  return reply;
+
+  // Cả 3 model đều 503 → lần sau kiểm tra lại từ model ưu tiên đầu tiên.
+  activeModelIndex = 0;
+  throw new Error("Tất cả model AI đều đang quá tải (503)");
 }
 
 // Trợ giúp: model đôi khi bọc JSON trong ```json ... ``` — bóc ra và parse.
