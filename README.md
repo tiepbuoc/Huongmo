@@ -1,13 +1,13 @@
 # Hướng Mở
 
-Công cụ tra cứu hướng nghiệp cho học sinh THPT: khám phá bản thân, tra cứu ngành / trường / tổ hợp xét tuyển, so sánh lựa chọn và lập kế hoạch nghề nghiệp (Career Roadmap). Có trợ lý AI hỗ trợ tư vấn.
+Công cụ định hướng nghề nghiệp cho học sinh THPT: khám phá bản thân, tra cứu ngành / trường / tổ hợp xét tuyển, so sánh lựa chọn và lập kế hoạch nghề nghiệp (Career Roadmap). Có trợ lý AI hỗ trợ tư vấn.
 
 Trang web thuần HTML/CSS/JS (không cần build), dữ liệu ngành/trường/tổ hợp lưu trên **Firestore**, dữ liệu cá nhân của học sinh (khám phá bản thân, so sánh, kế hoạch) lưu trên **trình duyệt của các bạn** (localStorage) — vì công cụ không có đăng nhập.
 
 ## Cấu trúc thư mục
 
 ```
-career-qr/
+Huongmo/
 ├── index.html                 Trang chủ
 ├── kham-pha-ban-than.html     Bước 1 — khám phá bản thân
 ├── tra-cuu-nganh.html         Bước 2 — tra cứu ngành (đọc Firestore)
@@ -21,26 +21,29 @@ career-qr/
     ├── css/ai-chat.css         Giao diện khung chat trợ lý AI
     ├── js/firebase-config.js   Cấu hình kết nối Firestore
     ├── js/app.js                Tiện ích dùng chung + localStorage
-    └── js/ai-chat.js            Trợ lý AI (theo mẫu chatbot bạn gửi)
+    ├── js/gateway-config.js    URL HUONGMO Gateway (n8n)
+    ├── js/huongmo-gateway.js    Xin token + gọi AI qua n8n
+    └── js/ai-chat.js            Khung chat trợ lý AI
+└── n8n/                        Workflow HUONGMO Gateway + hướng dẫn
 ```
 
 ## 1. Đưa lên GitHub Pages
 
-1. Tạo repo mới trên GitHub (ví dụ `career-qr`), đẩy toàn bộ thư mục `career-qr/` lên (thư mục gốc của repo chính là các file `index.html`, `assets/`…).
+1. Tạo repo mới trên GitHub (ví dụ `Huongmo`), đẩy toàn bộ thư mục `Huongmo/` lên (thư mục gốc của repo chính là các file `index.html`, `assets/`…).
 2. Vào **Settings → Pages**, chọn nhánh `main`, thư mục `/ (root)`, bấm Save.
-3. Sau 1–2 phút, trang sẽ có địa chỉ dạng `https://<ten-tai-khoan>.github.io/career-qr/`.
+3. Sau 1–2 phút, trang sẽ có địa chỉ dạng `https://<ten-tai-khoan>.github.io/Huongmo/`.
 4. Tạo mã QR trỏ tới địa chỉ đó (dùng bất kỳ công cụ tạo QR miễn phí nào) để học sinh quét.
 
 ## 2. Firestore — nạp dữ liệu ngành / trường / tổ hợp
 
-Dự án đã được nối sẵn với Firebase project **huongmo-8a3f7** (file `assets/js/firebase-config.js`).
+Dự án đã được nối sẵn với Firebase project **career-1733f** (file `assets/js/firebase-config.js`).
 
-**Bước bắt buộc trước khi dùng thật:** vào [Firebase Console](https://console.firebase.google.com/) → chọn project `huongmo-8a3f7` → **Firestore Database** → **Rules**, đặt quyền đọc công khai, còn quyền ghi thì hạn chế lại (xem mục "Bảo mật dữ liệu" bên dưới). Nếu Firestore chưa được bật, bấm **Create database** trước.
+**Bước bắt buộc trước khi dùng thật:** vào [Firebase Console](https://console.firebase.google.com/) → chọn project `career-1733f` → **Firestore Database** → **Rules**, đặt quyền đọc công khai, còn quyền ghi thì hạn chế lại (xem mục "Bảo mật dữ liệu" bên dưới). Nếu Firestore chưa được bật, bấm **Create database** trước.
 
 Có 2 cách nạp dữ liệu:
 
 **Cách nhanh — dùng trang quản trị:**
-Mở `admin.html` trên trang web đã deploy, nhập mã quản trị (đặt trong biến `ADMIN_CODE` ở đầu script của `admin.html`, nhớ đổi trước khi dùng thật), bấm **Nạp dữ liệu mẫu** để có ngay vài dòng ví dụ, sau đó dùng form để sửa/thêm dữ liệu thật.
+Mở `admin.html` trên trang web đã deploy, nhập mã quản trị (đặt ở hằng `ADMIN_CODE` trong `admin.html` — nhớ đổi trước khi dùng thật), bấm **Nạp dữ liệu mẫu** để có ngay vài dòng ví dụ, sau đó dùng form để sửa/thêm dữ liệu thật.
 
 **Cách thủ công — nhập trực tiếp trong Firebase Console:**
 Vào Firestore Database → Start collection, tạo 3 collection: `nganh`, `truong`, `tohop`, với các trường (field) như bảng dưới.
@@ -83,20 +86,22 @@ Vào Firestore Database → Start collection, tạo 3 collection: `nganh`, `truo
 
 > Ghi rõ năm cập nhật và luôn nhắc học sinh kiểm tra lại thông tin điểm chuẩn/học phí trên website chính thức của trường — dữ liệu tuyển sinh thay đổi theo từng năm.
 
-## 3. Trợ lý AI
+## 3. Trợ lý AI (qua HUONGMO Gateway trên n8n)
 
-`assets/js/ai-chat.js` gọi API theo đúng cấu trúc trong file `chatbot.html` mẫu bạn gửi (endpoint dạng `/v1/chat/completions`, giữ lịch sử hội thoại, model `gpt-4o-mini`). Key hiện tại là **key demo giống hệt file mẫu** — dùng để chạy thử ngay, không cần cấu hình gì thêm.
+Trang web **không còn giữ API key** và không gọi thẳng nhà cung cấp AI. Luồng:
 
-**Trước khi dùng chính thức**, đổi 3 giá trị ở đầu file `assets/js/ai-chat.js`:
-```js
-const AI_CONFIG = {
-  API_KEY: "...",          // đổi thành key thật của bạn
-  API_ENDPOINT: "...",     // endpoint dịch vụ AI bạn dùng
-  MODEL: "gpt-4o-mini"     // model bạn muốn dùng
-};
+```
+trình duyệt ─► n8n /huongmo-gw-token (Firebase ID token ẩn danh → token 5 phút)
+            ─► n8n /huongmo-gw-chat  (token + mode → giới hạn lượt dùng → LLM → trả lời)
 ```
 
-⚠️ **Vì sao không nên để key thật ở đây lâu dài:** đây là code JS chạy trên trình duyệt người dùng, ai mở "View source" trên trang GitHub Pages cũng đọc được key. Cách an toàn hơn khi dự án phát triển lớn hơn: viết một **Firebase Cloud Function** nhỏ giữ key ở phía máy chủ, cho trang web gọi vào function đó thay vì gọi thẳng nhà cung cấp AI. Với quy mô dùng nội bộ trường/lớp, việc dùng key demo/dùng chung có giới hạn chi tiêu là lựa chọn đơn giản và chấp nhận được.
+- `assets/js/gateway-config.js` — URL webhook n8n.
+- `assets/js/huongmo-gateway.js` — xin/gia hạn token, gọi `/huongmo-gw-chat`.
+- `assets/js/ai-chat.js` — khung chat + `HuongMoAI.ask({ mode, message })` dùng chung cho các trang.
+- `n8n/huongmo-gateway.json` — workflow n8n (tách biệt với POP-AI Gateway và CAREER Gateway).
+- `n8n/HUONG-DAN-N8N-GATEWAY.md` — **các bước cài đặt** (bật Firebase Anonymous Auth, tạo credential, import workflow).
+
+System prompt, model, nhiệt độ và giới hạn lượt dùng do n8n quyết định, không nằm trong code trình duyệt.
 
 ## 4. Bảo mật dữ liệu (Firestore Rules)
 
@@ -137,3 +142,11 @@ Với quy tắc này, `admin.html` sẽ **không ghi được** dữ liệu nữ
 - Career Roadmap (kế hoạch nghề nghiệp)
 
 Nếu học sinh đổi trình duyệt/thiết bị, các dữ liệu này sẽ không tự đồng bộ — đây là đánh đổi hợp lý để không phải làm hệ thống đăng nhập cho một công cụ tra cứu công khai.
+
+## 7. Ghi chú riêng của bản "Hướng Mở"
+
+- Đây là bản **clone của dự án Career** với giao diện và thương hiệu mới (màu chàm, font Lexend), triển khai tại `https://tiepbuoc.github.io/Huongmo/`.
+- **Dùng chung Firebase `career-1733f`** với Career: dữ liệu ngành/trường/tổ hợp là một. Muốn tách riêng dữ liệu, tạo project Firebase mới và thay `assets/js/firebase-config.js`.
+- **Dữ liệu cá nhân của học sinh** (localStorage) dùng tiền tố `huongmo_…`, **không lẫn** với Career dù cùng domain `tiepbuoc.github.io`.
+- **AI chạy trên workflow n8n riêng** (`n8n/huongmo-gateway.json`, webhook `/huongmo-gw-*`) — xem `n8n/HUONG-DAN-N8N-GATEWAY.md`.
+- Mã quản trị `admin.html` đang là mã mặc định trong mã nguồn (`ADMIN_CODE`) — hãy đổi trước khi dùng thật.

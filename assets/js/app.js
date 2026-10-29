@@ -26,13 +26,13 @@ document.addEventListener("DOMContentLoaded", () => {
    hoạch nghề nghiệp) chỉ nên lưu trên máy của các bạn, không đưa
    lên cơ sở dữ liệu công khai.
    ========================================================= */
-const CareerStore = {
+const HuongMoStore = {
   KEYS: {
-    SELF: "careerqr_kham_pha_ban_than",
-    SAVED_NGANH: "careerqr_nganh_da_luu",
-    COMPARE: "careerqr_so_sanh",
-    ROADMAP: "careerqr_ke_hoach",
-    CHAT: "careerqr_ai_chat_history"
+    SELF: "huongmo_kham_pha_ban_than",
+    SAVED_NGANH: "huongmo_nganh_da_luu",
+    COMPARE: "huongmo_so_sanh",
+    ROADMAP: "huongmo_ke_hoach",
+    CHAT: "huongmo_ai_chat_history"
   },
   get(key, fallback) {
     try {
@@ -83,12 +83,12 @@ function escapeHtml(str) {
 }
 
 /* =========================================================
-   CareerWizard — hiện từng bước một, ẩn bước cũ đi
+   HuongMoWizard — hiện từng bước một, ẩn bước cũ đi
    Dùng cho các trang dạng hỏi-đáp / chọn tuần tự (khám phá bản
    thân, tra cứu, so sánh…) để luôn chỉ hiện 1 nội dung, gọn và
    dễ theo dõi trên điện thoại.
    ========================================================= */
-function CareerWizard(root) {
+function HuongMoWizard(root) {
   const panes = [...root.querySelectorAll(".step-pane")];
   let current = panes.findIndex(p => p.classList.contains("is-active"));
   if (current < 0) current = 0;

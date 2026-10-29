@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kế hoạch nghề nghiệp — Hướng Mở</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%234338CA'/%3E%3Crect x='18.6' y='8' width='2.8' height='24' rx='1.4' fill='%23fff'/%3E%3Cpath d='M10.5 12.5h15.2l3.3 3.2-3.3 3.2H10.5z' fill='%23fff'/%3E%3Cpath d='M29.5 21.5H14.3L11 24.7l3.3 3.2h15.2z' fill='%23fff' opacity='.92'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/ai-chat.css">
 <style>
   .plan-row{ display:grid; grid-template-columns: 120px 1fr 1fr 34px; gap:10px; margin-bottom:10px; align-items:start; }
@@ -20,7 +20,12 @@
 <header class="site-header">
   <div class="bar">
     <a class="brand" href="index.html">
-      <span class="brand-mark" aria-hidden="true"><i class="fas fa-signs-post"></i></span>
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="40" height="40" rx="11" fill="var(--route)"/>
+        <rect x="18.6" y="8" width="2.8" height="24" rx="1.4" fill="#fff"/>
+        <path d="M10.5 12.5h15.2l3.3 3.2-3.3 3.2H10.5z" fill="#fff"/>
+        <path d="M29.5 21.5H14.3L11 24.7l3.3 3.2h15.2z" fill="#fff" opacity=".92"/>
+      </svg>
       <span class="brand-text">Hướng Mở<small>Định hướng nghề nghiệp</small></span>
     </a>
     <button class="nav-toggle" aria-label="Mở menu"><span></span></button>
@@ -35,7 +40,7 @@
 </header>
 
 <main>
-  <section class="hero" id="page-hero" style="padding-bottom:0;">
+  <section class="hero hero-page" id="page-hero">
     <div class="wrap">
       <p class="kicker">BƯỚC 4 / 4</p>
       <h1>Career Roadmap</h1>
@@ -128,7 +133,7 @@
 
 <footer class="site-footer no-print">
   <div class="wrap">
-    <p>Hướng Mở — công cụ tra cứu hướng nghiệp dành cho học sinh THPT.</p>
+    <p>Hướng Mở — công cụ định hướng nghề nghiệp cho học sinh THPT: tra cứu ngành, trường, tổ hợp xét tuyển, so sánh lựa chọn và lập kế hoạch.</p>
     <nav>
       <a href="ke-hoach.html">Career Roadmap</a>
       <a href="tra-cuu.html?loai=tohop">Tổ hợp xét tuyển</a>
@@ -137,18 +142,21 @@
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="assets/js/firebase-config.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/share-qr.js"></script>
+<script src="assets/js/gateway-config.js"></script>
+<script src="assets/js/huongmo-gateway.js"></script>
 <script src="assets/js/ai-chat.js"></script>
 
 <script>
   const params = new URLSearchParams(location.search);
-  const sharedPlan = CareerShare.readShared();
-  const saved = sharedPlan ? null : CareerStore.get(CareerStore.KEYS.ROADMAP, null);
+  const sharedPlan = HuongMoShare.readShared();
+  const saved = sharedPlan ? null : HuongMoStore.get(HuongMoStore.KEYS.ROADMAP, null);
 
-  const wizard = CareerWizard(document.getElementById("roadmap-wizard"));
+  const wizard = HuongMoWizard(document.getElementById("roadmap-wizard"));
   function setHeroVisible(visible) {
     const hero = document.getElementById("page-hero");
     if (hero) hero.classList.toggle("hero-collapsed", !visible);
@@ -204,16 +212,16 @@
 
   document.getElementById("btn-save-plan").addEventListener("click", () => {
     const plan = collectPlan();
-    CareerStore.set(CareerStore.KEYS.ROADMAP, plan);
+    HuongMoStore.set(HuongMoStore.KEYS.ROADMAP, plan);
     if (sharedPlan) { location.href = "ke-hoach.html"; return; }
     const msg = document.getElementById("save-msg");
     msg.style.display = "block";
     setTimeout(() => msg.style.display = "none", 3000);
-    window.CAREERQR_AI_CONTEXT = `Học sinh đang lập kế hoạch nghề nghiệp. Phương án ưu tiên: ${plan.uuTien || "chưa điền"}. Phương án dự phòng: ${plan.duPhong || "chưa điền"}.`;
+    window.HUONGMO_AI_CONTEXT = `Học sinh đang lập kế hoạch nghề nghiệp. Phương án ưu tiên: ${plan.uuTien || "chưa điền"}. Phương án dự phòng: ${plan.duPhong || "chưa điền"}.`;
   });
 
   document.getElementById("btn-print").addEventListener("click", () => {
-    CareerStore.set(CareerStore.KEYS.ROADMAP, collectPlan());
+    HuongMoStore.set(HuongMoStore.KEYS.ROADMAP, collectPlan());
     window.print();
   });
 
@@ -228,7 +236,7 @@
      soạn thảo (để tạo lại nếu muốn).
      --------------------------------------------------------- */
   async function requestAIPlan(uuTien, duPhong) {
-    const selfData = CareerStore.get(CareerStore.KEYS.SELF, null);
+    const selfData = HuongMoStore.get(HuongMoStore.KEYS.SELF, null);
     const hoSo = selfData
       ? `Học sinh học tốt/thích môn: ${(selfData.monHoc||[]).join(", ") || "chưa rõ"}. Sở thích: ${selfData.soThich || "chưa rõ"}. Giá trị nghề nghiệp quan trọng: ${selfData.giaTri || "chưa rõ"}.`
       : "Chưa có dữ liệu khám phá bản thân.";
@@ -239,12 +247,10 @@ ${hoSo}
 Hãy soạn một bảng kế hoạch hành động (Career Roadmap) gồm 5-6 mốc thời gian hợp lý (ví dụ: 1 tháng, 3 tháng, 6 tháng, 9 tháng, 12 tháng, hoặc mốc theo học kỳ/kỳ thi), mỗi mốc có một mục tiêu cụ thể và 1 hoạt động cụ thể, thiết thực, vừa sức học sinh THPT (không đưa lời khuyên y tế/tài chính rủi ro). Trả lời CHỈ bằng JSON, không thêm chữ nào khác, đúng định dạng:
 {"rows":[{"thoiGian":"...","mucTieu":"...","hoatDong":"..."}]}`;
 
-    const reply = await CareerAI.chat([
-      { role: "system", content: "Bạn là trợ lý hướng nghiệp, giỏi lập kế hoạch hành động ngắn gọn, thực tế cho học sinh THPT. Luôn trả lời đúng định dạng JSON được yêu cầu, không thêm giải thích ngoài JSON." },
-      { role: "user", content: userMsg }
-    ], { temperature: 0.5 });
+    // System prompt + nhiệt độ của mode "plan" nằm trong n8n; ở đây chỉ gửi nội dung yêu cầu.
+    const reply = await HuongMoAI.ask({ mode: "plan", message: userMsg });
 
-    const parsed = CareerAI.parseJson(reply);
+    const parsed = HuongMoAI.parseJson(reply);
     const rows = (parsed.rows || []).filter(r => r.thoiGian || r.mucTieu || r.hoatDong);
     if (!rows.length) throw new Error("AI không trả về mốc kế hoạch hợp lệ.");
     return rows;
@@ -272,7 +278,7 @@ Hãy soạn một bảng kế hoạch hành động (Career Roadmap) gồm 5-6 m
       msg.style.display = "block";
     } catch (err) {
       console.error(err);
-      msg.textContent = "Trợ lý AI đang gặp sự cố (" + err.message + "). Bạn có thể tự điền bảng bên dưới, hoặc thử lại sau ít phút.";
+      msg.textContent = HuongMoAI.errorText(err) + " Bạn có thể tự điền bảng bên dưới, hoặc thử lại sau ít phút.";
       msg.style.display = "block";
     } finally {
       btn.disabled = false;
@@ -286,8 +292,8 @@ Hãy soạn một bảng kế hoạch hành động (Career Roadmap) gồm 5-6 m
       alert("Bạn điền kế hoạch trước khi chia sẻ nhé.");
       return;
     }
-    const url = CareerShare.buildShareUrl("ke-hoach.html", plan);
-    CareerShare.open(url, {
+    const url = HuongMoShare.buildShareUrl("ke-hoach.html", plan);
+    HuongMoShare.open(url, {
       title: "Chia sẻ Career Roadmap",
       description: "Bạn bè quét mã sẽ xem được kế hoạch nghề nghiệp của bạn."
     });
@@ -309,7 +315,7 @@ Hãy soạn một bảng kế hoạch hành động (Career Roadmap) gồm 5-6 m
     document.getElementById("btn-share-kehoach").style.display = "none";
     document.getElementById("btn-back-mode").style.display = "none";
     document.getElementById("btn-save-plan").textContent = "Lưu về máy của bạn";
-    CareerShare.renderBanner(document.getElementById("step-editor"), {
+    HuongMoShare.renderBanner(document.getElementById("step-editor"), {
       text: "Đây là Career Roadmap do bạn bè chia sẻ — chỉ xem, không chỉnh sửa được. Bấm \"Lưu về máy của bạn\" nếu muốn dùng làm kế hoạch của chính mình (có thể sửa lại sau khi lưu)."
     });
   }
@@ -379,7 +385,7 @@ Hãy soạn một bảng kế hoạch hành động (Career Roadmap) gồm 5-6 m
 
   document.getElementById("btn-back-mode").addEventListener("click", () => goStep("step-mode"));
 
-  window.CAREERQR_AI_CONTEXT = "Học sinh đang ở trang Lập kế hoạch nghề nghiệp (Career Roadmap), điền phương án ưu tiên/dự phòng và các mốc hành động theo thời gian.";
+  window.HUONGMO_AI_CONTEXT = "Học sinh đang ở trang Lập kế hoạch nghề nghiệp (Career Roadmap), điền phương án ưu tiên/dự phòng và các mốc hành động theo thời gian.";
 </script>
 </body>
 </html>

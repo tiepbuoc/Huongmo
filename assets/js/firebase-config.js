@@ -1,16 +1,16 @@
 /* =========================================================
    Hướng Mở — Cấu hình Firebase (dùng chung cho mọi trang)
-   Dự án Firebase: huongmo-8a3f7
+   Dự án Firebase: career-1733f
    ========================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDtY8jY6UooBrC4GVuKJ-Wk3n8BOhELeew",
-  authDomain: "huongmo-8a3f7.firebaseapp.com",
-  projectId: "huongmo-8a3f7",
-  storageBucket: "huongmo-8a3f7.firebasestorage.app",
-  messagingSenderId: "557281871866",
-  appId: "1:557281871866:web:ba6d84d1de383be88fc643",
-  measurementId: "G-RVH03VR62Z"
+  apiKey: "AIzaSyApwygCFGIMe58o8aZvSl5ZEAKpUJ930KE",
+  authDomain: "career-1733f.firebaseapp.com",
+  projectId: "career-1733f",
+  storageBucket: "career-1733f.firebasestorage.app",
+  messagingSenderId: "544873924713",
+  appId: "1:544873924713:web:02dc4f65a3867c0f0f7af8",
+  measurementId: "G-E3B1KQZN5Q"
 };
 
 // Dùng Firebase SDK bản "compat" (nạp qua thẻ <script> ở mỗi trang HTML)

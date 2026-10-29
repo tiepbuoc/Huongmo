@@ -1,5 +1,5 @@
 /* =========================================================
-   HƯỚNG MỞ — Chia sẻ qua mã QR
+   Hướng Mở — Chia sẻ qua mã QR
    ---------------------------------------------------------
    Vì trang không có đăng nhập / máy chủ lưu dữ liệu cá nhân,
    cách chia sẻ đơn giản nhất là: gói gọn phần dữ liệu cần cho
@@ -10,7 +10,7 @@
    Với trang Tra cứu, không cần đóng gói dữ liệu — chỉ cần dùng
    lại đúng các tham số lọc mà trang đã hỗ trợ sẵn trên URL.
    ========================================================= */
-const CareerShare = (function () {
+const HuongMoShare = (function () {
   function toBase64Url(json) {
     const b64 = btoa(unescape(encodeURIComponent(json)));
     return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -182,7 +182,7 @@ const CareerShare = (function () {
       // Modal có thể đã bị đóng hoặc mở lại cho link khác trong lúc chờ tải —
       // chỉ vẽ nếu link input vẫn đang là link này.
       if (linkInput.value !== url) return;
-      QRCode.toCanvas(canvas, url, { width: 220, margin: 1, color: { dark: "#181B3A", light: "#FFFFFF" } }, (err) => {
+      QRCode.toCanvas(canvas, url, { width: 220, margin: 1, color: { dark: "#1E1B4B", light: "#FFFFFF" } }, (err) => {
         if (err) {
           console.error("Không tạo được mã QR:", err);
           statusEl.textContent = "Không vẽ được mã QR. Bạn vẫn có thể sao chép đường link bên dưới.";

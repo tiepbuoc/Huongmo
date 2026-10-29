@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Khám phá bản thân — Hướng Mở</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%234338CA'/%3E%3Crect x='18.6' y='8' width='2.8' height='24' rx='1.4' fill='%23fff'/%3E%3Cpath d='M10.5 12.5h15.2l3.3 3.2-3.3 3.2H10.5z' fill='%23fff'/%3E%3Cpath d='M29.5 21.5H14.3L11 24.7l3.3 3.2h15.2z' fill='%23fff' opacity='.92'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/ai-chat.css">
 </head>
 <body data-page="self">
@@ -13,7 +13,12 @@
 <header class="site-header">
   <div class="bar">
     <a class="brand" href="index.html">
-      <span class="brand-mark" aria-hidden="true"><i class="fas fa-signs-post"></i></span>
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="40" height="40" rx="11" fill="var(--route)"/>
+        <rect x="18.6" y="8" width="2.8" height="24" rx="1.4" fill="#fff"/>
+        <path d="M10.5 12.5h15.2l3.3 3.2-3.3 3.2H10.5z" fill="#fff"/>
+        <path d="M29.5 21.5H14.3L11 24.7l3.3 3.2h15.2z" fill="#fff" opacity=".92"/>
+      </svg>
       <span class="brand-text">Hướng Mở<small>Định hướng nghề nghiệp</small></span>
     </a>
     <button class="nav-toggle" aria-label="Mở menu"><span></span></button>
@@ -28,7 +33,7 @@
 </header>
 
 <main>
-  <section class="hero" id="page-hero" style="padding-bottom:0;">
+  <section class="hero hero-page" id="page-hero">
     <div class="wrap-narrow">
       <p class="kicker">BƯỚC 1 / 4</p>
       <h1>Khám phá bản thân</h1>
@@ -114,7 +119,7 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <p>Hướng Mở — công cụ tra cứu hướng nghiệp dành cho học sinh THPT.</p>
+    <p>Hướng Mở — công cụ định hướng nghề nghiệp cho học sinh THPT: tra cứu ngành, trường, tổ hợp xét tuyển, so sánh lựa chọn và lập kế hoạch.</p>
     <nav>
       <a href="ke-hoach.html">Career Roadmap</a>
       <a href="tra-cuu.html?loai=tohop">Tổ hợp xét tuyển</a>
@@ -124,14 +129,17 @@
 
 <!-- Nạp Firebase + tiện ích dùng chung TRƯỚC khi chạy script của trang -->
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="assets/js/firebase-config.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/share-qr.js"></script>
+<script src="assets/js/gateway-config.js"></script>
+<script src="assets/js/huongmo-gateway.js"></script>
 <script src="assets/js/ai-chat.js"></script>
 
 <script>
-  const wizard = CareerWizard(document.getElementById("self-wizard"));
+  const wizard = HuongMoWizard(document.getElementById("self-wizard"));
 
   function setHeroVisible(visible) {
     const hero = document.getElementById("page-hero");
@@ -239,18 +247,18 @@
   }).catch(err => console.error("Không tải được danh sách ngành:", err));
 
   // ---- Nếu link có dữ liệu chia sẻ (?xem=...), hiện kết quả đó ở chế độ chỉ xem ----
-  const sharedSelf = CareerShare.readShared();
+  const sharedSelf = HuongMoShare.readShared();
   if (sharedSelf) {
     document.getElementById("self-wizard").style.display = "none";
     setHeroVisible(false);
     showResult(sharedSelf.goiY || [], sharedSelf.nhanXet, sharedSelf.fallback);
     document.getElementById("btn-self-redo").style.display = "none";
     document.getElementById("btn-self-share").style.display = "none";
-    CareerShare.renderBanner(document.getElementById("self-result"), {
+    HuongMoShare.renderBanner(document.getElementById("self-result"), {
       text: "Đây là kết quả khám phá bản thân do bạn bè chia sẻ — chỉ xem, không chỉnh sửa được.",
       saveLabel: "Lưu về máy của bạn",
       onSave: () => {
-        CareerStore.set(CareerStore.KEYS.SELF, {
+        HuongMoStore.set(HuongMoStore.KEYS.SELF, {
           monHoc: sharedSelf.monHoc || [], soThich: sharedSelf.soThich, moiTruong: sharedSelf.moiTruong,
           giaTri: sharedSelf.giaTri, ghiChu: "", goiY: sharedSelf.goiY, nhanXet: sharedSelf.nhanXet,
           fallback: sharedSelf.fallback, capNhat: new Date().toISOString()
@@ -261,21 +269,21 @@
   }
 
   document.getElementById("btn-self-share").addEventListener("click", () => {
-    const data = CareerStore.get(CareerStore.KEYS.SELF, null);
+    const data = HuongMoStore.get(HuongMoStore.KEYS.SELF, null);
     if (!data || !data.goiY || !data.goiY.length) return;
     const payload = {
       monHoc: data.monHoc, soThich: data.soThich, moiTruong: data.moiTruong,
       giaTri: data.giaTri, goiY: data.goiY, nhanXet: data.nhanXet, fallback: data.fallback
     };
-    const url = CareerShare.buildShareUrl("kham-pha-ban-than.html", payload);
-    CareerShare.open(url, {
+    const url = HuongMoShare.buildShareUrl("kham-pha-ban-than.html", payload);
+    HuongMoShare.open(url, {
       title: "Chia sẻ kết quả khám phá bản thân",
       description: "Bạn bè quét mã này sẽ xem được gợi ý ngành học của bạn."
     });
   });
 
   // ---- Nạp lại dữ liệu đã lưu trước đó (nếu có) ----
-  const saved = sharedSelf ? null : CareerStore.get(CareerStore.KEYS.SELF, null);
+  const saved = sharedSelf ? null : HuongMoStore.get(HuongMoStore.KEYS.SELF, null);
   if (saved) {
     (saved.monHoc || []).forEach(m => {
       const cb = optWrap.querySelector(`input[value="${CSS.escape(m)}"]`);
@@ -368,12 +376,10 @@ ${danhSachText}
 Hãy chọn tối đa 4 ngành phù hợp nhất với học sinh này, sắp xếp theo mức độ phù hợp giảm dần. Trả lời CHỈ bằng JSON, không thêm chữ nào khác, đúng định dạng:
 {"nhanXet":"1-2 câu nhận xét ngắn gọn, thân thiện, không kết luận thay học sinh","goiY":[{"ten_nganh":"tên ngành lấy đúng từ danh sách","nhom_nganh":"nhóm ngành tương ứng","ly_do":"1 câu ngắn giải thích vì sao phù hợp"}]}`;
 
-      const reply = await CareerAI.chat([
-        { role: "system", content: "Bạn là trợ lý hướng nghiệp cho học sinh THPT. Bạn chỉ được chọn ngành từ danh sách được cung cấp, không tự tạo ra ngành mới. Luôn trả lời đúng định dạng JSON được yêu cầu." },
-        { role: "user", content: userMsg }
-      ], { temperature: 0.4 });
+      // System prompt + nhiệt độ của mode "suggest" nằm trong n8n.
+      const reply = await HuongMoAI.ask({ mode: "suggest", message: userMsg });
 
-      const parsed = CareerAI.parseJson(reply);
+      const parsed = HuongMoAI.parseJson(reply);
       const validNames = new Set(ALL_NGANH.map(n => n.ten_nganh.toLowerCase().trim()));
       goiY = (parsed.goiY || []).filter(g => g.ten_nganh && validNames.has(g.ten_nganh.toLowerCase().trim()));
       nhanXet = parsed.nhanXet;
@@ -388,8 +394,8 @@ Hãy chọn tối đa 4 ngành phù hợp nhất với học sinh này, sắp x�
         : "Hệ thống chưa có dữ liệu ngành trong Firestore, nên chưa thể gợi ý cụ thể. Hãy nhờ người quản trị nạp dữ liệu ngành trước.";
     }
 
-    CareerStore.set(CareerStore.KEYS.SELF, { monHoc, soThich, moiTruong, giaTri, ghiChu, goiY, nhanXet, fallback: isFallback, capNhat: new Date().toISOString() });
-    window.CAREERQR_AI_CONTEXT = `Học sinh vừa hoàn thành phần khám phá bản thân. Môn mạnh: ${monHoc.join(", ")}. Sở thích: ${soThich}. Ngành được gợi ý: ${goiY.map(g=>g.ten_nganh).join(", ") || "chưa có"}.`;
+    HuongMoStore.set(HuongMoStore.KEYS.SELF, { monHoc, soThich, moiTruong, giaTri, ghiChu, goiY, nhanXet, fallback: isFallback, capNhat: new Date().toISOString() });
+    window.HUONGMO_AI_CONTEXT = `Học sinh vừa hoàn thành phần khám phá bản thân. Môn mạnh: ${monHoc.join(", ")}. Sở thích: ${soThich}. Ngành được gợi ý: ${goiY.map(g=>g.ten_nganh).join(", ") || "chưa có"}.`;
 
     if (goiY.length) showResult(goiY, nhanXet, isFallback);
     else {

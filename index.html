@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hướng Mở — Chọn ngành, chọn trường, chọn tổ hợp</title>
+<title>Hướng Mở — Chọn ngành, chọn trường, hướng đi đã mở sẵn</title>
 <meta name="description" content="Hướng Mở giúp học sinh THPT tra cứu ngành học, trường đào tạo và tổ hợp xét tuyển, so sánh lựa chọn và lập kế hoạch nghề nghiệp.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='11' fill='%234338CA'/%3E%3Crect x='18.6' y='8' width='2.8' height='24' rx='1.4' fill='%23fff'/%3E%3Cpath d='M10.5 12.5h15.2l3.3 3.2-3.3 3.2H10.5z' fill='%23fff'/%3E%3Cpath d='M29.5 21.5H14.3L11 24.7l3.3 3.2h15.2z' fill='%23fff' opacity='.92'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/ai-chat.css">
 </head>
 <body data-page="home">
@@ -14,7 +14,12 @@
 <header class="site-header">
   <div class="bar">
     <a class="brand" href="index.html">
-      <span class="brand-mark" aria-hidden="true"><i class="fas fa-signs-post"></i></span>
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="40" height="40" rx="11" fill="var(--route)"/>
+        <rect x="18.6" y="8" width="2.8" height="24" rx="1.4" fill="#fff"/>
+        <path d="M10.5 12.5h15.2l3.3 3.2-3.3 3.2H10.5z" fill="#fff"/>
+        <path d="M29.5 21.5H14.3L11 24.7l3.3 3.2h15.2z" fill="#fff" opacity=".92"/>
+      </svg>
       <span class="brand-text">Hướng Mở<small>Định hướng nghề nghiệp</small></span>
     </a>
     <button class="nav-toggle" aria-label="Mở menu"><span></span></button>
@@ -29,10 +34,10 @@
 </header>
 
 <main>
-  <section class="hero">
+  <section class="hero hero-home">
     <div class="wrap">
       <p class="kicker">Dành cho học sinh THPT</p>
-      <h1>Chọn ngành, chọn trường — hướng đi đã mở sẵn.</h1>
+      <h1>Chọn ngành, chọn trường <span class="h1-line">— hướng đi đã mở sẵn.</span></h1>
       <p class="lede">Tra cứu, so sánh và lập kế hoạch nghề nghiệp phù hợp với sở thích, năng lực và điều kiện của riêng bạn.</p>
       <div class="hero-actions">
         <a class="btn btn-route" href="kham-pha-ban-than.html">Bắt đầu khám phá bản thân</a>
@@ -66,7 +71,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="section-first">
     <div class="wrap">
       <div class="section-head">
         <p class="eyebrow">Bốn điểm đến</p>
@@ -109,7 +114,7 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <p>Hướng Mở — công cụ tra cứu hướng nghiệp dành cho học sinh THPT.</p>
+    <p>Hướng Mở — công cụ định hướng nghề nghiệp cho học sinh THPT: tra cứu ngành, trường, tổ hợp xét tuyển, so sánh lựa chọn và lập kế hoạch.</p>
     <nav>
       <a href="ke-hoach.html">Career Roadmap</a>
       <a href="tra-cuu.html?loai=tohop">Tổ hợp xét tuyển</a>
@@ -118,9 +123,12 @@
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="assets/js/firebase-config.js"></script>
 <script src="assets/js/app.js"></script>
+<script src="assets/js/gateway-config.js"></script>
+<script src="assets/js/huongmo-gateway.js"></script>
 <script src="assets/js/ai-chat.js"></script>
 </body>
 </html>

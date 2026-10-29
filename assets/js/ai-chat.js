@@ -1,63 +1,19 @@
 /* =========================================================
    Hướng Mở — Trợ lý AI (dùng chung mọi trang)
-   Viết dựa theo đúng cấu trúc gọi API của file chatbot mẫu
-   bạn đã gửi (fetch → chat/completions, giữ lịch sử hội thoại).
-   =========================================================
 
-   ⚠️ QUAN TRỌNG VỀ BẢO MẬT
-   API_KEY dưới đây là "key demo" y như trong file chatbot mẫu —
-   nó nằm trong code JS mà TRÌNH DUYỆT tải về, nên bất kỳ ai xem
-   mã nguồn trang GitHub Pages của bạn cũng lấy được key này.
-   Điều đó ổn để chạy thử, nhưng KHÔNG an toàn khi dùng thật:
-     - Ai đó có thể lấy key này dùng cho việc khác, tốn phí của bạn.
-   Khi sẵn sàng dùng chính thức, cách an toàn là đặt một hàm trung
-   gian (proxy) — ví dụ Firebase Cloud Function — giữ key ở phía
-   máy chủ, và cho trang web gọi vào hàm đó thay vì gọi thẳng OpenAI.
-   Xem hướng dẫn trong README.md của dự án.
+   Trình duyệt KHÔNG còn giữ API key và không gọi thẳng nhà cung cấp AI.
+   Mọi yêu cầu đi qua HUONGMO Gateway (n8n) qua assets/js/huongmo-gateway.js:
+   n8n xác thực, giới hạn lượt dùng, giữ system prompt rồi mới gọi LLM.
+
+   Cần nạp trước file này (theo thứ tự):
+     firebase-app-compat.js, firebase-auth-compat.js, firebase-config.js,
+     gateway-config.js, huongmo-gateway.js
+
+   Các trang khác dùng chung:
+     HuongMoAI.ask({ mode: "plan" | "suggest" | "chat", message, history?, context? })  -> Promise<string>
+     HuongMoAI.parseJson(text)    -> bóc ```json ... ``` rồi parse
+     HuongMoAI.errorText(err)     -> thông báo lỗi tiếng Việt thân thiện
    ========================================================= */
-
-const AI_CONFIG = {
-  API_KEY: "sk-4150297863e3eee405805e8609648e6c5cebb1b502ffb46e",
-  API_ENDPOINT: "https://api.shopaikey.com/v1/chat/completions",
-  MODEL: "gpt-4.1-mini-2025-04-14"
-};
-
-const AI_SYSTEM_PROMPT = `Bạn là trợ lý hướng nghiệp của Hướng Mở, một công cụ giúp học sinh THPT tra cứu ngành học, trường đào tạo và tổ hợp xét tuyển.
-Nhiệm vụ của bạn:
-- Trả lời ngắn gọn, dễ hiểu, đúng trọng tâm câu hỏi của học sinh.
-- Giúp học sinh suy nghĩ rõ hơn về sở thích, năng lực, và các lựa chọn ngành/trường — KHÔNG quyết định thay các bạn.
-- Khi học sinh hỏi thông tin tuyển sinh cụ thể (điểm chuẩn, chỉ tiêu, học phí...), nhắc các bạn kiểm tra lại trên website tuyển sinh chính thức của trường vì thông tin có thể thay đổi theo năm.
-- Không đưa ra chẩn đoán tâm lý hay kết luận "bạn nên chọn ngành X". Hãy gợi mở, đặt câu hỏi, và trình bày ưu/nhược điểm để học sinh tự quyết định.
-- Nếu học sinh có dấu hiệu căng thẳng, áp lực học tập/thi cử, hãy quan tâm hỏi thăm và khuyến khích các bạn chia sẻ với giáo viên, phụ huynh hoặc chuyên gia tâm lý học đường.
-Trả lời bằng tiếng Việt, giọng thân thiện, như một anh/chị tư vấn hướng nghiệp.`;
-
-/* ---------------------------------------------------------
-   Hàm gọi AI dùng chung — các trang khác (kế hoạch, khám phá
-   bản thân…) có thể dùng window.CareerAI.chat(messages) để
-   gọi AI mà không cần mở khung chat.
-   --------------------------------------------------------- */
-async function careerAIChat(messages, opts = {}) {
-  const response = await fetch(AI_CONFIG.API_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + AI_CONFIG.API_KEY
-    },
-    body: JSON.stringify({
-      model: AI_CONFIG.MODEL,
-      messages,
-      temperature: opts.temperature ?? 0.6
-    })
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Lỗi API (${response.status}): ${errText}`);
-  }
-  const data = await response.json();
-  const reply = data?.choices?.[0]?.message?.content?.trim();
-  if (!reply) throw new Error("AI không trả về nội dung.");
-  return reply;
-}
 
 // Trợ giúp: model đôi khi bọc JSON trong ```json ... ``` — bóc ra và parse.
 function parseAIJson(text) {
@@ -70,18 +26,22 @@ function parseAIJson(text) {
   return JSON.parse(jsonSlice);
 }
 
-window.CareerAI = { chat: careerAIChat, parseJson: parseAIJson };
+function huongMoAIErrorText(err) {
+  if (err && err.code && window.HuongMoGateway) return window.HuongMoGateway.friendlyError(err);
+  return (err && err.message) || "lỗi không rõ";
+}
+
+window.HuongMoAI = {
+  ask: (p) => window.HuongMoGateway.ask(p),
+  parseJson: parseAIJson,
+  errorText: huongMoAIErrorText
+};
 
 (function () {
-  let conversationHistory = [{ role: "system", content: buildSystemPrompt() }];
+  // Lịch sử hội thoại (chỉ gồm lượt user/assistant; system prompt do n8n giữ).
+  let conversationHistory = [];
   let panelBuilt = false;
-
-  function buildSystemPrompt() {
-    const extra = window.CAREERQR_AI_CONTEXT
-      ? `\n\nBối cảnh trang hiện tại (dùng để trả lời sát hơn, không đọc lại nguyên văn cho học sinh): ${window.CAREERQR_AI_CONTEXT}`
-      : "";
-    return AI_SYSTEM_PROMPT + extra;
-  }
+  const MAX_INPUT = 1000; // khớp giới hạn của mode "chat" trong n8n
 
   function mount() {
     const launcher = document.createElement("button");
@@ -104,7 +64,7 @@ window.CareerAI = { chat: careerAIChat, parseJson: parseAIJson };
         <div class="chat-msg bot">Chào bạn 👋 Chị/anh là trợ lý hướng nghiệp của Hướng Mở. Bạn đang băn khoăn điều gì — về sở thích, ngành học, hay chọn trường?</div>
       </div>
       <div class="chat-input">
-        <textarea id="ai-chat-input" placeholder="Nhập câu hỏi…" rows="1"></textarea>
+        <textarea id="ai-chat-input" placeholder="Nhập câu hỏi…" rows="1" maxlength="1000"></textarea>
         <button id="ai-chat-send" type="button">Gửi</button>
       </div>
     `;
@@ -120,6 +80,8 @@ window.CareerAI = { chat: careerAIChat, parseJson: parseAIJson };
       launcher.classList.toggle("is-hidden", willOpen);
       if (willOpen) {
         document.getElementById("ai-chat-input").focus();
+        // Xin sẵn token (và tạo phiên ẩn danh nếu cần) để câu hỏi đầu không phải chờ.
+        if (window.HuongMoGateway) window.HuongMoGateway.prefetchToken();
       }
     }
     launcher.addEventListener("click", toggleOpen);
@@ -157,21 +119,30 @@ window.CareerAI = { chat: careerAIChat, parseJson: parseAIJson };
     const text = input.value.trim();
     if (!text) return;
 
+    if (text.length > MAX_INPUT) {
+      appendMessage("Câu hỏi hơi dài, bạn rút gọn dưới " + MAX_INPUT + " ký tự giúp mình nhé.", "error");
+      return;
+    }
+
     appendMessage(text, "user");
-    conversationHistory.push({ role: "user", content: text });
     input.value = "";
     sendBtn.disabled = true;
 
     const typingEl = appendMessage("Đang trả lời…", "bot typing");
 
     try {
-      const reply = await careerAIChat(conversationHistory);
+      const reply = await HuongMoAI.ask({
+        mode: "chat",
+        message: text,
+        history: conversationHistory,                 // các lượt trước (chưa gồm câu hỏi hiện tại)
+        context: window.HUONGMO_AI_CONTEXT || ""     // bối cảnh trang, đọc tại thời điểm gửi
+      });
       typingEl.remove();
       appendMessage(reply, "bot");
-      conversationHistory.push({ role: "assistant", content: reply });
+      conversationHistory.push({ role: "user", content: text }, { role: "assistant", content: reply });
     } catch (err) {
       typingEl.remove();
-      appendMessage("Xin lỗi, trợ lý đang gặp sự cố khi kết nối (" + err.message + "). Bạn thử lại sau ít phút, hoặc hỏi trực tiếp giáo viên tư vấn nhé.", "error");
+      appendMessage(huongMoAIErrorText(err) + " Bạn cũng có thể hỏi trực tiếp giáo viên tư vấn nhé.", "error");
       console.error(err);
     } finally {
       sendBtn.disabled = false;
